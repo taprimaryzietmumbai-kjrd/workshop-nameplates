@@ -1,0 +1,1726 @@
+<!doctype html>
+<html lang="en">
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>ZIET Mumbai — Nameplate Studio</title>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#eef3f8;
+  color:#14243a;
+}
+
+.wrap{
+  max-width:1250px;
+  margin:auto;
+  padding:14px;
+}
+
+header{
+  background:#245d8f;
+  color:#fff;
+  border-radius:18px;
+  padding:18px 24px;
+  margin-bottom:14px;
+}
+
+h1{
+  margin:0 0 5px;
+  font-size:28px;
+}
+
+header p{
+  margin:0;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:380px 1fr;
+  gap:15px;
+}
+
+.card{
+  background:#fff;
+  border-radius:16px;
+  padding:18px;
+  box-shadow:0 3px 15px #0001;
+}
+
+label{
+  display:block;
+  font-weight:700;
+  margin:11px 0 6px;
+}
+
+select,
+button{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  font-size:15px;
+}
+
+select{
+  border:1px solid #ccd6e2;
+  background:#fff;
+}
+
+button{
+  border:0;
+  background:#238b3b;
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:9px;
+}
+
+button.secondary{
+  background:#245d8f;
+}
+
+button.light{
+  background:#eaf1f7;
+  color:#245d8f;
+}
+
+button:disabled,
+select:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+}
+
+.status{
+  padding:11px;
+  border-radius:10px;
+  background:#f0f5fa;
+  margin:11px 0;
+  font-size:14px;
+  word-break:break-word;
+}
+
+.ok{
+  background:#e9f7ed;
+  color:#17682b;
+}
+
+.err{
+  background:#fff0f0;
+  color:#9a2222;
+}
+
+.small{
+  font-size:12px;
+  color:#687586;
+  margin-top:7px;
+}
+
+.row{
+  display:flex;
+  gap:8px;
+}
+
+.row>*{
+  flex:1;
+}
+
+.topline{
+  display:flex;
+  justify-content:space-between;
+  font-weight:700;
+  color:#245d8f;
+}
+
+.preview{
+  background:#dfe8f1;
+  border-radius:14px;
+  min-height:530px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:30px;
+}
+
+.platewrap{
+  position:relative;
+  width:95%;
+  max-width:900px;
+}
+
+.plate{
+  width:100%;
+  aspect-ratio:5/2;
+  background:#fff;
+  border:1px solid #b8c3ce;
+  box-shadow:0 12px 30px #0002;
+  display:flex;
+  flex-direction:column;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+}
+
+.face{
+  height:50%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:6px 18px;
+  overflow:hidden;
+}
+
+.eng{
+  transform:rotate(180deg);
+}
+
+.name{
+  font-family:"Arial Black",Arial,sans-serif;
+  font-weight:900;
+  line-height:.95;
+  white-space:nowrap;
+  max-width:100%;
+  overflow:hidden;
+}
+
+.details{
+  font-family:Arial,sans-serif;
+  font-weight:700;
+  line-height:1.05;
+  white-space:nowrap;
+  max-width:100%;
+  overflow:hidden;
+  margin-top:8px;
+}
+
+.hiname{
+  font-family:Aparajita,"Noto Sans Devanagari",serif;
+  font-weight:700;
+  line-height:1.05;
+  white-space:nowrap;
+  max-width:100%;
+  overflow:visible;
+}
+
+.hdetails{
+  font-family:Aparajita,"Noto Sans Devanagari",serif;
+  font-weight:700;
+  line-height:1.05;
+  white-space:nowrap;
+  max-width:100%;
+  overflow:hidden;
+  margin-top:8px;
+}
+
+.fold{
+  border-top:1px dashed #a9b4bf;
+  position:absolute;
+  width:100%;
+  left:0;
+  top:50%;
+  pointer-events:none;
+}
+
+.note{
+  background:#fff8df;
+  border:1px solid #ead28a;
+  border-radius:10px;
+  padding:10px;
+  margin-top:12px;
+  font-size:13px;
+}
+
+@media(max-width:820px){
+
+  .grid{
+    grid-template-columns:1fr;
+  }
+
+  .preview{
+    min-height:400px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+<header>
+  <h1>ZIET Mumbai — Nameplate Studio</h1>
+  <p>
+    Google Sheet → Select Tab → Select Participant →
+    10″ × 2″ or 8″ × 2″ Name Stand — Print / Save as PDF
+  </p>
+</header>
+
+<div class="grid">
+
+<div class="card">
+
+  <div class="topline">
+    <span>Google Sheet</span>
+    <span id="count">0 participants</span>
+  </div>
+
+  <button id="connect">
+    Connect & Discover All Tabs
+  </button>
+
+  <div id="status" class="status">
+    Ready.
+  </div>
+
+  <label for="tabs">
+    Worksheet / Tab
+  </label>
+
+  <select id="tabs" disabled>
+    <option>Select a worksheet</option>
+  </select>
+
+  <label for="people">
+    Participant
+  </label>
+
+  <select id="people" disabled>
+    <option>Select a participant</option>
+  </select>
+
+  <div class="row">
+
+    <button id="refresh" class="secondary" disabled>
+      ↻ Refresh
+    </button>
+
+    <button id="clear" class="light" disabled>
+      Clear
+    </button>
+
+  </div>
+
+  <div class="small">
+    The participant list is read directly from the Google Sheet.
+    Automatic refresh every 60 seconds.
+  </div>
+
+  <div id="last" class="small"></div>
+
+  <div class="row">
+
+    <button id="pdf10" disabled>
+      Selected — 10″ × 2″ Stand
+    </button>
+
+    <button id="pdf8" disabled>
+      Selected — 8″ × 2″ Stand
+    </button>
+
+  </div>
+
+  <div class="row">
+
+    <button id="all10" disabled>
+      All — 10″ × 2″ Stands
+    </button>
+
+    <button id="all8" disabled>
+      All — 8″ × 2″ Stands
+    </button>
+
+  </div>
+
+  <div class="note">
+
+    <strong>Print setup:</strong>
+
+    choose <strong>100% / Actual Size</strong>,
+    margins <strong>None</strong>,
+    and turn <strong>Headers and footers OFF</strong>.
+
+    <br><br>
+
+    <strong>10″ × 2″:</strong> A4 Landscape
+
+    <br>
+
+    <strong>8″ × 2″:</strong> A4 Portrait
+
+    <br>
+
+    Two complete stands are placed on each A4 page.
+
+    If the number is odd, the final page contains one stand.
+
+  </div>
+
+</div>
+
+
+<div class="card">
+
+  <div class="topline">
+    <span>Live Preview</span>
+    <span id="selectedNo">
+      No participant selected
+    </span>
+  </div>
+
+  <div class="preview">
+
+    <div class="platewrap">
+
+      <div class="plate">
+
+        <div class="face eng">
+
+          <div
+            id="en"
+            class="name"
+          >
+            Participant Name
+          </div>
+
+          <div
+            id="endes"
+            class="details"
+          >
+            Designation | School | Jaipur Region
+          </div>
+
+        </div>
+
+
+        <div class="face">
+
+          <div
+            id="hi"
+            class="hiname"
+          >
+            प्रतिभागी का नाम
+          </div>
+
+          <div
+            id="hides"
+            class="hdetails"
+          >
+            पदनाम | विद्यालय | जयपुर संभाग
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="fold"></div>
+
+    </div>
+
+  </div>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+'use strict';
+
+let rows = [];
+let currentSheet = '';
+let busy = false;
+
+
+/* ---------------------------------------------------------
+   BASIC HELPERS
+--------------------------------------------------------- */
+
+const $ = id => document.getElementById(id);
+
+
+function setStatus(msg, cls='') {
+
+  $('status').className = 'status ' + cls;
+
+  $('status').textContent = msg;
+
+}
+
+
+function setLast() {
+
+  $('last').textContent =
+    'Last updated: ' +
+    new Date().toLocaleTimeString();
+
+}
+
+
+/* ---------------------------------------------------------
+   LOAD WORKSHEET TABS
+--------------------------------------------------------- */
+
+function loadTabs(preferred='') {
+
+  if (busy) return;
+
+  busy = true;
+
+  setStatus(
+    'Reading worksheets from Google Sheet…'
+  );
+
+  google.script.run
+
+    .withSuccessHandler(tabs => {
+
+      busy = false;
+
+      $('tabs').innerHTML =
+        '<option value="">Select a worksheet</option>';
+
+      tabs.forEach(t => {
+
+        const o =
+          document.createElement('option');
+
+        o.value = t.name;
+
+        o.textContent = t.name;
+
+        $('tabs').appendChild(o);
+
+      });
+
+      $('tabs').disabled = false;
+
+      $('refresh').disabled = false;
+
+      if (
+        preferred &&
+        tabs.some(t => t.name === preferred)
+      ) {
+        $('tabs').value = preferred;
+      }
+
+      setStatus(
+        'Connected — ' +
+        tabs.length +
+        ' worksheet tabs found.',
+        'ok'
+      );
+
+      setLast();
+
+      if ($('tabs').value) {
+        loadParticipants(
+          $('tabs').value
+        );
+      }
+
+    })
+
+    .withFailureHandler(e => {
+
+      busy = false;
+
+      setStatus(
+        'Google Sheet error: ' +
+        (e.message || e),
+        'err'
+      );
+
+    })
+
+    .getTabs();
+
+}
+
+
+/* ---------------------------------------------------------
+   LOAD PARTICIPANTS
+--------------------------------------------------------- */
+
+function loadParticipants(sheet) {
+
+  if (!sheet) return;
+
+  currentSheet = sheet;
+
+  $('people').disabled = true;
+
+  $('people').innerHTML =
+    '<option>Loading participants…</option>';
+
+  setStatus(
+    'Loading participants from “' +
+    sheet +
+    '”…'
+  );
+
+  google.script.run
+
+    .withSuccessHandler(data => {
+
+      rows = data.rows || [];
+
+      $('people').innerHTML =
+        '<option value="">Select a participant</option>';
+
+      rows.forEach((r, i) => {
+
+        const o =
+          document.createElement('option');
+
+        o.value = String(i);
+
+        o.textContent =
+          r['Name of the Participant'] ||
+          r['प्रतिभागी का नाम'] ||
+          ('Participant ' + (i + 1));
+
+        $('people').appendChild(o);
+
+      });
+
+      $('people').disabled =
+        !rows.length;
+
+      $('count').textContent =
+        rows.length +
+        ' participants';
+
+      setPdfButtons(true);
+
+      $('clear').disabled = false;
+
+      setStatus(
+        'Loaded ' +
+        rows.length +
+        ' participants from “' +
+        sheet +
+        '”.',
+        'ok'
+      );
+
+      setLast();
+
+    })
+
+    .withFailureHandler(e => {
+
+      rows = [];
+
+      $('people').innerHTML =
+        '<option>Select a participant</option>';
+
+      $('people').disabled = true;
+
+      setPdfButtons(false);
+
+      setStatus(
+        'Participant error: ' +
+        (e.message || e),
+        'err'
+      );
+
+    })
+
+    .getParticipants(sheet);
+
+}
+
+
+/* ---------------------------------------------------------
+   DATA CLEANING
+--------------------------------------------------------- */
+
+function clean(v) {
+
+  return String(v || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+}
+
+
+/* ---------------------------------------------------------
+   REGION FORMATTING
+--------------------------------------------------------- */
+
+function regionEnglish(row) {
+
+  const raw =
+    clean(row['Region']);
+
+  if (!raw) return '';
+
+  if (/region$/i.test(raw)) {
+    return raw;
+  }
+
+  return raw + ' Region';
+
+}
+
+
+function regionHindi(row) {
+
+  const raw =
+    clean(row['आंचल']);
+
+  if (!raw) return '';
+
+  if (/संभाग$/.test(raw)) {
+    return raw;
+  }
+
+  return raw + ' संभाग';
+
+}
+
+
+/* ---------------------------------------------------------
+   TWO-LINE DETAILS
+--------------------------------------------------------- */
+
+function combined(row, hindi) {
+
+  const a = hindi
+
+    ? [
+        row['पदनाम'],
+        row['विद्यालय'],
+        regionHindi(row)
+      ]
+
+    : [
+        row['Designation'],
+        row['School'],
+        regionEnglish(row)
+      ];
+
+  return a
+    .map(clean)
+    .filter(Boolean)
+    .join(' | ');
+
+}
+
+
+/* ---------------------------------------------------------
+   RECORD
+--------------------------------------------------------- */
+
+function getRecord(index) {
+
+  return rows[Number(index)] || null;
+
+}
+
+
+/* ---------------------------------------------------------
+   LIVE PREVIEW
+--------------------------------------------------------- */
+
+function show(index) {
+
+  const r =
+    getRecord(index);
+
+  if (!r) return;
+
+  $('en').textContent =
+    clean(
+      r['Name of the Participant']
+    );
+
+  $('endes').textContent =
+    combined(r, false);
+
+  $('hi').textContent =
+    clean(
+      r['प्रतिभागी का नाम']
+    );
+
+  $('hides').textContent =
+    combined(r, true);
+
+  $('selectedNo').textContent =
+    'Participant ' +
+    (Number(index) + 1) +
+    ' of ' +
+    rows.length;
+
+  fitPreviewText();
+
+}
+
+
+/* ---------------------------------------------------------
+   PREVIEW FITTING
+--------------------------------------------------------- */
+
+function fitPreviewText() {
+
+  fitOne(
+    $('en'),
+    46,
+    18
+  );
+
+  fitOne(
+    $('endes'),
+    18,
+    9
+  );
+
+  fitOne(
+    $('hi'),
+    48,
+    20
+  );
+
+  fitOne(
+    $('hides'),
+    18,
+    9
+  );
+
+}
+
+
+function fitOne(
+  el,
+  maxPx,
+  minPx
+) {
+
+  el.style.fontSize =
+    maxPx + 'px';
+
+  let n = maxPx;
+
+  const maxWidth =
+    el.parentElement.clientWidth - 10;
+
+  while (
+    n > minPx &&
+    el.scrollWidth > maxWidth
+  ) {
+
+    n -= 1;
+
+    el.style.fontSize =
+      n + 'px';
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   HTML ESCAPING
+--------------------------------------------------------- */
+
+function escapeHtml(s) {
+
+  return String(s || '')
+
+    .replace(/&/g,'&amp;')
+
+    .replace(/</g,'&lt;')
+
+    .replace(/>/g,'&gt;')
+
+    .replace(/"/g,'&quot;')
+
+    .replace(/'/g,'&#39;');
+
+}
+
+
+/* ---------------------------------------------------------
+   PHYSICAL FONT FITTING
+--------------------------------------------------------- */
+
+function physicalFontSize(
+  text,
+  basePt,
+  minPt,
+  family,
+  weight,
+  maxWidthPx
+) {
+
+  const probe =
+    document.createElement('span');
+
+  probe.textContent = text;
+
+  probe.style.position =
+    'fixed';
+
+  probe.style.left =
+    '-10000px';
+
+  probe.style.top =
+    '0';
+
+  probe.style.whiteSpace =
+    'nowrap';
+
+  probe.style.fontFamily =
+    family;
+
+  probe.style.fontWeight =
+    weight;
+
+  probe.style.fontSize =
+    basePt + 'pt';
+
+  document.body.appendChild(
+    probe
+  );
+
+  let pt = basePt;
+
+  while (
+    pt > minPt &&
+    probe.scrollWidth > maxWidthPx
+  ) {
+
+    pt -= 1;
+
+    probe.style.fontSize =
+      pt + 'pt';
+
+  }
+
+  probe.remove();
+
+  return pt;
+
+}
+
+
+/* ---------------------------------------------------------
+   MAKE ONE PRINTABLE STAND
+--------------------------------------------------------- */
+
+function makeStandHtml(
+  row,
+  standWidth
+) {
+
+  const is10 =
+    standWidth === 10;
+
+  const widthMm =
+    is10 ? 254 : 203.2;
+
+  const heightMm =
+    101.6;
+
+  const contentWidthMm =
+    widthMm - 12;
+
+  const approxPx =
+    contentWidthMm *
+    3.779527559;
+
+
+  /* English:
+     requested 90 pt */
+  const enNameSize =
+    physicalFontSize(
+      clean(
+        row['Name of the Participant']
+      ),
+      90,
+      42,
+      'Arial Black, Arial, sans-serif',
+      '900',
+      approxPx
+    );
+
+
+  /* English details:
+     requested 26 pt */
+  const enDetailSize =
+    physicalFontSize(
+      combined(row, false),
+      26,
+      13,
+      'Arial, sans-serif',
+      '700',
+      approxPx
+    );
+
+
+  /* Hindi name:
+     corrected from 96 pt to 94 pt
+     to remove slight vertical clipping */
+  const hiNameSize =
+    physicalFontSize(
+      clean(
+        row['प्रतिभागी का नाम']
+      ),
+      94,
+      46,
+      'Aparajita, "Noto Sans Devanagari", serif',
+      '700',
+      approxPx
+    );
+
+
+  /* Hindi details:
+     requested 28 pt */
+  const hiDetailSize =
+    physicalFontSize(
+      combined(row, true),
+      28,
+      14,
+      'Aparajita, "Noto Sans Devanagari", serif',
+      '700',
+      approxPx
+    );
+
+
+  return (
+
+    '<div class="stand" ' +
+      'style="' +
+        'width:' +
+        widthMm +
+        'mm;' +
+        'height:' +
+        heightMm +
+        'mm;' +
+      '">' +
+
+      '<div class="face english" ' +
+        'style="height:50%;">' +
+
+        '<div class="text-block">' +
+
+          '<div class="name" ' +
+            'style="' +
+              'font-size:' +
+              enNameSize +
+              'pt;' +
+              'font-family:Arial Black,Arial,sans-serif;' +
+              'font-weight:900;' +
+            '">' +
+
+            escapeHtml(
+              clean(
+                row['Name of the Participant']
+              )
+            ) +
+
+          '</div>' +
+
+          '<div class="details" ' +
+            'style="' +
+              'font-size:' +
+              enDetailSize +
+              'pt;' +
+              'font-family:Arial,Arial,sans-serif;' +
+              'font-weight:700;' +
+            '">' +
+
+            escapeHtml(
+              combined(row, false)
+            ) +
+
+          '</div>' +
+
+        '</div>' +
+
+      '</div>' +
+
+
+      '<div class="face hindi" ' +
+        'style="height:50%;">' +
+
+        '<div class="text-block">' +
+
+          '<div class="name hindi-name" ' +
+            'style="' +
+              'font-size:' +
+              hiNameSize +
+              'pt;' +
+              'font-family:Aparajita,&quot;Noto Sans Devanagari&quot;,serif;' +
+              'font-weight:700;' +
+            '">' +
+
+            escapeHtml(
+              clean(
+                row['प्रतिभागी का नाम']
+              )
+            ) +
+
+          '</div>' +
+
+          '<div class="details" ' +
+            'style="' +
+              'font-size:' +
+              hiDetailSize +
+              'pt;' +
+              'font-family:Aparajita,&quot;Noto Sans Devanagari&quot;,serif;' +
+              'font-weight:700;' +
+            '">' +
+
+            escapeHtml(
+              combined(row, true)
+            ) +
+
+          '</div>' +
+
+        '</div>' +
+
+      '</div>' +
+
+    '</div>'
+
+  );
+
+}
+
+
+/* ---------------------------------------------------------
+   PRINT NAMEPLATES
+--------------------------------------------------------- */
+
+function printNameplates(
+  records,
+  standWidth
+) {
+
+  if (!records.length) return;
+
+
+  const is10 =
+    standWidth === 10;
+
+
+  const pageOrientation =
+    is10
+      ? 'landscape'
+      : 'portrait';
+
+
+  const pageW =
+    is10 ? 297 : 210;
+
+
+  const pageH =
+    is10 ? 210 : 297;
+
+
+  const standW =
+    is10 ? 254 : 203.2;
+
+
+  const standH =
+    101.6;
+
+
+  const side =
+    (pageW - standW) / 2;
+
+
+  /*
+    IMPORTANT:
+    10×2 geometry remains exactly as the
+    established 10:33 version.
+
+    Only the 8×2 page receives the tiny
+    0.5 mm safety tolerance that prevents
+    browser pagination from generating an
+    intermediate blank page.
+  */
+
+  const vertical =
+    is10
+      ? (pageH - (standH * 2)) / 2
+      : (pageH - (standH * 2) - 0.5) / 2;
+
+
+  /*
+    Exactly two participants per A4 page:
+    1–2, 3–4, 5–6, etc.
+  */
+
+  const pages = [];
+
+  for (
+    let i = 0;
+    i < records.length;
+    i += 2
+  ) {
+
+    pages.push(
+      records.slice(i, i + 2)
+    );
+
+  }
+
+
+  const pageHtml =
+    pages.map(group => {
+
+      const stands =
+        group
+          .map(r =>
+            makeStandHtml(
+              r,
+              standWidth
+            )
+          )
+          .join('');
+
+
+      /*
+        Only 8×2 gets the 0.5 mm
+        page-height safety adjustment.
+      */
+
+      const pageHeight =
+        is10
+          ? pageH
+          : pageH - 0.5;
+
+
+      return (
+
+        '<section ' +
+          'class="print-page" ' +
+          'style="' +
+            'width:' +
+            pageW +
+            'mm;' +
+            'height:' +
+            pageHeight +
+            'mm;' +
+            'padding:' +
+            vertical +
+            'mm ' +
+            side +
+            'mm;' +
+          '">' +
+
+          stands +
+
+        '</section>'
+
+      );
+
+    })
+    .join('');
+
+
+  const printWindow =
+    window.open(
+      '',
+      '_blank',
+      'width=1200,height=900'
+    );
+
+
+  if (!printWindow) {
+
+    alert(
+      'The print window was blocked. ' +
+      'Please allow pop-ups for this Web App and try again.'
+    );
+
+    return;
+
+  }
+
+
+  const doc =
+    printWindow.document;
+
+
+  doc.open();
+
+
+  doc.write(
+    '<!doctype html>' +
+    '<html>' +
+    '<head>' +
+    '<meta charset="utf-8">' +
+    '<title>ZIET Mumbai — Nameplates</title>'
+  );
+
+
+  doc.write('<style>');
+
+
+  doc.write(
+    '@page{' +
+      'size:A4 ' +
+      pageOrientation +
+      ';' +
+      'margin:0' +
+    '}'
+  );
+
+
+  doc.write(
+    'html,body{' +
+      'margin:0;' +
+      'padding:0;' +
+      'background:#fff' +
+    '}'
+  );
+
+
+  doc.write(
+    'body{' +
+      'font-family:Arial,sans-serif' +
+    '}'
+  );
+
+
+  /*
+    Each print-page is exactly one A4 page.
+  */
+
+  doc.write(
+    '.print-page{' +
+      'box-sizing:border-box;' +
+      'display:flex;' +
+      'flex-direction:column;' +
+      'justify-content:flex-start;' +
+      'align-items:center;' +
+      'gap:0;' +
+      'break-after:page;' +
+      'page-break-after:always;' +
+      'overflow:hidden' +
+    '}'
+  );
+
+
+  doc.write(
+    '.print-page:last-child{' +
+      'break-after:auto;' +
+      'page-break-after:auto' +
+    '}'
+  );
+
+
+  doc.write(
+    '.stand{' +
+      'box-sizing:border-box;' +
+      'position:relative;' +
+      'display:flex;' +
+      'flex-direction:column;' +
+      'flex:none;' +
+      'background:#fff;' +
+      'overflow:hidden' +
+    '}'
+  );
+
+
+  doc.write(
+    '.stand:after{' +
+      'content:"";' +
+      'position:absolute;' +
+      'left:0;' +
+      'right:0;' +
+      'top:50%;' +
+      'border-top:0.25mm dashed #aeb8c2;' +
+      'pointer-events:none' +
+    '}'
+  );
+
+
+  doc.write(
+    '.face{' +
+      'box-sizing:border-box;' +
+      'width:100%;' +
+      'display:flex;' +
+      'align-items:center;' +
+      'justify-content:center;' +
+      'text-align:center;' +
+      'overflow:hidden;' +
+      'padding:2mm 6mm' +
+    '}'
+  );
+
+
+  doc.write(
+    '.text-block{' +
+      'width:100%;' +
+      'display:flex;' +
+      'flex-direction:column;' +
+      'align-items:center;' +
+      'justify-content:center;' +
+      'text-align:center;' +
+      'margin:0 auto;' +
+      'overflow:hidden' +
+    '}'
+  );
+
+
+  doc.write(
+    '.name,.details{' +
+      'width:100%;' +
+      'text-align:center;' +
+      'white-space:nowrap;' +
+      'overflow:hidden;' +
+      'text-overflow:clip;' +
+      'line-height:1' +
+    '}'
+  );
+
+
+  doc.write(
+    '.details{' +
+      'margin-top:2.5mm;' +
+      'line-height:1.05' +
+    '}'
+  );
+
+
+  /*
+    Hindi name correction:
+    94 pt base size and extra vertical
+    line-height so matras and lower strokes
+    are not vertically clipped.
+  */
+
+  doc.write(
+    '.hindi .hindi-name{' +
+      'line-height:1.05;' +
+      'overflow:visible;' +
+      'padding-top:0.5mm;' +
+      'padding-bottom:0.5mm;' +
+      'box-sizing:content-box' +
+    '}'
+  );
+
+
+  /*
+    English upper face remains rotated 180°.
+  */
+
+  doc.write(
+    '.english{' +
+      'transform:rotate(180deg)' +
+    '}'
+  );
+
+
+  doc.write(
+    '.hindi{' +
+      'transform:none' +
+    '}'
+  );
+
+
+  doc.write('</style>');
+
+
+  doc.write(
+    '</head>' +
+    '<body>' +
+    pageHtml +
+    '</body>' +
+    '</html>'
+  );
+
+
+  doc.close();
+
+
+  const doPrint = () => {
+
+    if (
+      doc.fonts &&
+      doc.fonts.ready
+    ) {
+
+      doc.fonts.ready.then(() => {
+
+        printWindow.focus();
+
+        printWindow.print();
+
+      });
+
+    } else {
+
+      printWindow.focus();
+
+      printWindow.print();
+
+    }
+
+  };
+
+
+  /*
+    Small delay allows the print document
+    and fonts to render before printing.
+  */
+
+  setTimeout(
+    doPrint,
+    500
+  );
+
+}
+
+
+/* ---------------------------------------------------------
+   SELECTED PARTICIPANT
+--------------------------------------------------------- */
+
+function downloadSelected(
+  standWidth
+) {
+
+  const index =
+    $('people').value;
+
+
+  if (index === '') {
+
+    alert(
+      'Please select a participant first.'
+    );
+
+    return;
+
+  }
+
+
+  const row =
+    getRecord(index);
+
+
+  if (!row) return;
+
+
+  const label =
+    standWidth === 8
+      ? '8″ × 2″'
+      : '10″ × 2″';
+
+
+  setStatus(
+    'Opening print layout for ' +
+    label +
+    ' stand…'
+  );
+
+
+  printNameplates(
+    [row],
+    standWidth
+  );
+
+
+  setStatus(
+    label +
+    ' print layout opened.',
+    'ok'
+  );
+
+}
+
+
+/* ---------------------------------------------------------
+   ALL PARTICIPANTS
+--------------------------------------------------------- */
+
+function downloadAll(
+  standWidth
+) {
+
+  if (!rows.length) return;
+
+
+  const label =
+    standWidth === 8
+      ? '8″ × 2″'
+      : '10″ × 2″';
+
+
+  setStatus(
+    'Opening print layout for ' +
+    rows.length +
+    ' participants — ' +
+    label +
+    '…'
+  );
+
+
+  printNameplates(
+    rows,
+    standWidth
+  );
+
+
+  setStatus(
+    label +
+    ' print layout opened — ' +
+    rows.length +
+    ' participants.',
+    'ok'
+  );
+
+}
+
+
+/* ---------------------------------------------------------
+   BUTTON ENABLE / DISABLE
+--------------------------------------------------------- */
+
+function setPdfButtons(
+  enabled
+) {
+
+  const state =
+    !enabled ||
+    !rows.length;
+
+
+  $('pdf10').disabled =
+    state;
+
+  $('pdf8').disabled =
+    state;
+
+  $('all10').disabled =
+    state;
+
+  $('all8').disabled =
+    state;
+
+}
+
+
+/* ---------------------------------------------------------
+   EVENTS
+--------------------------------------------------------- */
+
+$('connect').onclick =
+  () => loadTabs(currentSheet);
+
+
+$('refresh').onclick =
+  () => loadTabs(
+    currentSheet || ''
+  );
+
+
+$('tabs').onchange =
+  e => loadParticipants(
+    e.target.value
+  );
+
+
+$('people').onchange =
+  e => show(
+    e.target.value
+  );
+
+
+$('clear').onclick =
+  () => {
+
+    $('people').value = '';
+
+    $('selectedNo').textContent =
+      'No participant selected';
+
+    $('en').textContent =
+      'Participant Name';
+
+    $('endes').textContent =
+      'Designation | School | Jaipur Region';
+
+    $('hi').textContent =
+      'प्रतिभागी का नाम';
+
+    $('hides').textContent =
+      'पदनाम | विद्यालय | जयपुर संभाग';
+
+    fitPreviewText();
+
+  };
+
+
+$('pdf10').onclick =
+  () => downloadSelected(10);
+
+
+$('pdf8').onclick =
+  () => downloadSelected(8);
+
+
+$('all10').onclick =
+  () => downloadAll(10);
+
+
+$('all8').onclick =
+  () => downloadAll(8);
+
+
+/* ---------------------------------------------------------
+   INITIAL LOAD
+--------------------------------------------------------- */
+
+setPdfButtons(false);
+
+loadTabs('');
+
+
+/* ---------------------------------------------------------
+   AUTOMATIC SHEET REFRESH
+--------------------------------------------------------- */
+
+setInterval(
+  () => {
+
+    if (
+      currentSheet &&
+      !busy
+    ) {
+
+      loadTabs(
+        currentSheet
+      );
+
+    }
+
+  },
+  60000
+);
+
+
+window.addEventListener(
+  'resize',
+  fitPreviewText
+);
+
+</script>
+
+</body>
+</html>
