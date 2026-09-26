@@ -256,13 +256,7 @@ Google Sheet → Select Tab → Select Participant →
 </p>
 </header>
 
-
 <div class="grid">
-
-
-<!-- =================================================
-     LEFT CONTROL PANEL
-     ================================================= -->
 
 <div class="card">
 
@@ -271,133 +265,95 @@ Google Sheet → Select Tab → Select Participant →
 <span id="count">0 participants</span>
 </div>
 
-
 <button id="connect">
 Connect & Discover All Tabs
 </button>
 
-
 <div id="status" class="status">
-Ready. Click “Connect & Discover All Tabs” when you want to connect to the Google Sheet.
+Ready — GitHub Pages API connection.
 </div>
 
-
-<label for="tabs">
-Worksheet / Tab
-</label>
+<label for="tabs">Worksheet / Tab</label>
 
 <select id="tabs" disabled>
 <option>Select a worksheet</option>
 </select>
 
-
-<label for="people">
-Participant
-</label>
+<label for="people">Participant</label>
 
 <select id="people" disabled>
 <option>Select a participant</option>
 </select>
 
-
 <div class="row">
 
-<button id="refresh"
-        class="secondary"
-        disabled>
+<button id="refresh" class="secondary" disabled>
 ↻ Refresh
 </button>
 
-<button id="clear"
-        class="light"
-        disabled>
+<button id="clear" class="light" disabled>
 Clear
 </button>
 
 </div>
 
-
 <div class="small">
 The participant list is read directly from the Google Sheet.
-Use Refresh whenever you want to reload the latest worksheet and participant data.
+Click Refresh whenever you want the latest data.
 </div>
-
 
 <div class="small">
 Connected through the separate ZIET Mumbai — Nameplate API.
 Your existing Nameplate Studio Apps Script is not modified.
 </div>
 
-
 <div id="last" class="small"></div>
-
 
 <div class="row">
 
-<button id="pdf10"
-        disabled>
+<button id="pdf10" disabled>
 Selected — 10″ × 2″ Stand
 </button>
 
-<button id="pdf8"
-        disabled>
+<button id="pdf8" disabled>
 Selected — 8″ × 2″ Stand
 </button>
 
 </div>
 
-
 <div class="row">
 
-<button id="all10"
-        disabled>
+<button id="all10" disabled>
 All — 10″ × 2″ Stands
 </button>
 
-<button id="all8"
-        disabled>
+<button id="all8" disabled>
 All — 8″ × 2″ Stands
 </button>
 
 </div>
 
-
 <div class="note">
-
 <strong>Print setup:</strong>
-
 choose <strong>100% / Actual Size</strong>,
 margins <strong>None</strong>, and turn
 <strong>Headers and footers OFF</strong>.
 
-10″ × 2″ uses A4 landscape.
-
+10″ × 2″ uses A4 landscape;
 8″ × 2″ uses A4 portrait.
 
 Two complete stands are placed on each A4 page;
 if the number is odd, the last page contains one.
-
 </div>
 
 </div>
-
-
-<!-- =================================================
-     RIGHT LIVE PREVIEW
-     ================================================= -->
 
 <div class="card">
 
 <div class="topline">
-
 <span>Live Preview</span>
-
-<span id="selectedNo">
-No participant selected
-</span>
-
+<span id="selectedNo">No participant selected</span>
 </div>
-
 
 <div class="preview">
 
@@ -405,40 +361,29 @@ No participant selected
 
 <div class="plate">
 
-
-<!-- ENGLISH FACE -->
-
 <div class="face eng">
 
-<div id="en"
-     class="name">
+<div id="en" class="name">
 Participant Name
 </div>
 
-<div id="endes"
-     class="details">
-Designation | School | Jaipur Region
+<div id="endes" class="details">
+Designation, School, Jaipur Region
 </div>
 
 </div>
-
-
-<!-- HINDI FACE -->
 
 <div class="face">
 
-<div id="hi"
-     class="hiname">
+<div id="hi" class="hiname">
 प्रतिभागी का नाम
 </div>
 
-<div id="hides"
-     class="hdetails">
-पदनाम | विद्यालय | जयपुर संभाग
+<div id="hides" class="hdetails">
+पदनाम, विद्यालय, जयपुर संभाग
 </div>
 
 </div>
-
 
 </div>
 
@@ -454,29 +399,24 @@ Designation | School | Jaipur Region
 
 </div>
 
+</div>
+
 
 <script>
-
 'use strict';
 
-
-/* =====================================================
-   SEPARATE APPS SCRIPT API
-
-   THIS IS THE NEW API PROJECT.
-
-   THE OLD WORKING APPS SCRIPT IS NOT USED OR MODIFIED.
-   ===================================================== */
+let rows = [];
+let currentSheet = '';
+let busy = false;
 
 const API_URL =
   'https://script.google.com/macros/s/AKfycbwWxFoFxmQ3cgoE5r5LVbGEu0u6wtH6TUyN6Sp2vd_oKQwFTTWF-TX_o4Ybj9ZtLAwg/exec';
-
 
 let jsonpCounter = 0;
 
 
 /* =====================================================
-   JSONP API CALL
+   API CONNECTION
    ===================================================== */
 
 function apiCall(action, params = {}) {
@@ -489,131 +429,80 @@ function apiCall(action, params = {}) {
       '_' +
       Date.now();
 
+    const script = document.createElement('script');
 
-    const script =
-      document.createElement('script');
+    const query = new URLSearchParams();
 
+    query.set('action', action);
+    query.set('callback', callbackName);
 
-    const query =
-      new URLSearchParams();
-
-
-    query.set(
-      'action',
-      action
-    );
-
-
-    query.set(
-      'callback',
-      callbackName
-    );
-
-
-    Object.keys(params).forEach(
-      function(key) {
-
-        query.set(
-          key,
-          params[key]
-        );
-
-      }
-    );
-
+    Object.keys(params).forEach(function(key) {
+      query.set(key, params[key]);
+    });
 
     let finished = false;
 
+    const cleanup = function() {
 
-    function cleanup() {
-
-      if (finished) {
-        return;
-      }
-
+      if (finished) return;
 
       finished = true;
 
-
       try {
         delete window[callbackName];
-      }
-      catch (_) {}
-
+      } catch (_) {}
 
       if (script.parentNode) {
-
-        script.parentNode.removeChild(
-          script
-        );
-
+        script.parentNode.removeChild(script);
       }
+    };
 
-    }
+    const timer = setTimeout(function() {
 
+      cleanup();
 
-    const timer =
-      setTimeout(
-        function() {
-
-          cleanup();
-
-          reject(
-            new Error(
-              'API request timed out.'
-            )
-          );
-
-        },
-        30000
+      reject(
+        new Error('API request timed out.')
       );
 
-
-    window[callbackName] =
-      function(data) {
-
-        clearTimeout(timer);
-
-        cleanup();
+    }, 30000);
 
 
-        if (
-          !data ||
-          data.ok !== true
-        ) {
+    window[callbackName] = function(data) {
 
-          reject(
-            new Error(
-              data && data.error
-                ? data.error
-                : 'Unknown API error.'
-            )
-          );
+      clearTimeout(timer);
 
-          return;
-        }
+      cleanup();
 
-
-        resolve(data);
-
-      };
-
-
-    script.onerror =
-      function() {
-
-        clearTimeout(timer);
-
-        cleanup();
-
+      if (!data || data.ok !== true) {
 
         reject(
           new Error(
-            'Could not connect to the Apps Script API.'
+            data && data.error
+              ? data.error
+              : 'Unknown API error.'
           )
         );
 
-      };
+        return;
+      }
+
+      resolve(data);
+    };
+
+
+    script.onerror = function() {
+
+      clearTimeout(timer);
+
+      cleanup();
+
+      reject(
+        new Error(
+          'Could not connect to the Apps Script API.'
+        )
+      );
+    };
 
 
     script.src =
@@ -621,49 +510,26 @@ function apiCall(action, params = {}) {
       '?' +
       query.toString();
 
-
-    document.head.appendChild(
-      script
-    );
+    document.head.appendChild(script);
 
   });
-
 }
 
 
 /* =====================================================
-   APPLICATION STATE
+   HELPERS
    ===================================================== */
 
-let rows = [];
-
-let currentSheet = '';
-
-let busy = false;
+const $ = id =>
+  document.getElementById(id);
 
 
-const $ =
-  function(id) {
-    return document.getElementById(id);
-  };
-
-
-/* =====================================================
-   STATUS
-   ===================================================== */
-
-function setStatus(
-  msg,
-  cls = ''
-) {
+function setStatus(msg, cls = '') {
 
   $('status').className =
     'status ' + cls;
 
-
-  $('status').textContent =
-    msg;
-
+  $('status').textContent = msg;
 }
 
 
@@ -677,88 +543,56 @@ function setLast() {
 
 
 /* =====================================================
-   LOAD WORKSHEETS
-
-   IMPORTANT:
-   THIS IS ONLY CALLED WHEN THE USER CLICKS
-   CONNECT OR REFRESH.
-
-   THERE IS NO AUTOMATIC API REQUEST.
+   LOAD TABS
    ===================================================== */
 
-async function loadTabs(
-  preferred = ''
-) {
+async function loadTabs(preferred = '') {
 
-  if (busy) {
-    return;
-  }
-
+  if (busy) return;
 
   busy = true;
-
 
   setStatus(
     'Reading worksheets from Google Sheet…'
   );
 
-
   try {
 
     const data =
-      await apiCall(
-        'tabs'
-      );
-
+      await apiCall('tabs');
 
     const tabs =
       data.tabs || [];
 
-
     $('tabs').innerHTML =
       '<option value="">Select a worksheet</option>';
 
+    tabs.forEach(function(t) {
 
-    tabs.forEach(
-      function(t) {
+      const o =
+        document.createElement('option');
 
-        const o =
-          document.createElement(
-            'option'
-          );
+      o.value =
+        t.name;
 
+      o.textContent =
+        t.name;
 
-        o.value =
-          t.name;
+      $('tabs').appendChild(o);
 
-
-        o.textContent =
-          t.name;
+    });
 
 
-        $('tabs').appendChild(
-          o
-        );
+    $('tabs').disabled = false;
 
-      }
-    );
-
-
-    $('tabs').disabled =
-      false;
-
-
-    $('refresh').disabled =
-      false;
+    $('refresh').disabled = false;
 
 
     if (
       preferred &&
-      tabs.some(
-        function(t) {
-          return t.name === preferred;
-        }
-      )
+      tabs.some(function(t) {
+        return t.name === preferred;
+      })
     ) {
 
       $('tabs').value =
@@ -774,7 +608,6 @@ async function loadTabs(
       'ok'
     );
 
-
     setLast();
 
 
@@ -786,24 +619,19 @@ async function loadTabs(
 
     }
 
-  }
-
-  catch (error) {
+  } catch (error) {
 
     setStatus(
       'API error: ' +
       (
-        error &&
-        error.message
+        error && error.message
           ? error.message
           : error
       ),
       'err'
     );
 
-  }
-
-  finally {
+  } finally {
 
     busy = false;
 
@@ -816,26 +644,18 @@ async function loadTabs(
    LOAD PARTICIPANTS
    ===================================================== */
 
-async function loadParticipants(
-  sheet
-) {
+async function loadParticipants(sheet) {
 
-  if (!sheet) {
-    return;
-  }
-
+  if (!sheet) return;
 
   currentSheet =
     sheet;
 
-
   $('people').disabled =
     true;
 
-
   $('people').innerHTML =
     '<option>Loading participants…</option>';
-
 
   setStatus(
     'Loading participants from “' +
@@ -849,11 +669,8 @@ async function loadParticipants(
     const data =
       await apiCall(
         'participants',
-        {
-          sheet: sheet
-        }
+        {sheet: sheet}
       );
-
 
     rows =
       data.rows || [];
@@ -863,53 +680,35 @@ async function loadParticipants(
       '<option value="">Select a participant</option>';
 
 
-    rows.forEach(
-      function(r, i) {
+    rows.forEach(function(r, i) {
 
-        const o =
-          document.createElement(
-            'option'
-          );
+      const o =
+        document.createElement('option');
 
+      o.value =
+        String(i);
 
-        o.value =
-          String(i);
+      o.textContent =
+        r['Name of the Participant'] ||
+        r['प्रतिभागी का नाम'] ||
+        ('Participant ' + (i + 1));
 
+      $('people').appendChild(o);
 
-        o.textContent =
-          r['Name of the Participant'] ||
-          r['प्रतिभागी का नाम'] ||
-          (
-            'Participant ' +
-            (i + 1)
-          );
-
-
-        $('people').appendChild(
-          o
-        );
-
-      }
-    );
+    });
 
 
     $('people').disabled =
       !rows.length;
 
-
     $('count').textContent =
       rows.length +
       ' participants';
 
-
-    setPdfButtons(
-      true
-    );
-
+    setPdfButtons(true);
 
     $('clear').disabled =
       false;
-
 
     setStatus(
       'Loaded ' +
@@ -920,38 +719,28 @@ async function loadParticipants(
       'ok'
     );
 
-
     setLast();
 
-  }
 
-  catch (error) {
+  } catch (error) {
 
     rows = [];
-
 
     $('people').innerHTML =
       '<option>Select a participant</option>';
 
-
     $('people').disabled =
       true;
 
-
-    setPdfButtons(
-      false
-    );
-
+    setPdfButtons(false);
 
     $('count').textContent =
       '0 participants';
 
-
     setStatus(
       'Participant API error: ' +
       (
-        error &&
-        error.message
+        error && error.message
           ? error.message
           : error
       ),
@@ -964,133 +753,90 @@ async function loadParticipants(
 
 
 /* =====================================================
-   TEXT CLEANING
+   DATA CLEANING
    ===================================================== */
 
 function clean(v) {
 
-  return String(
-    v || ''
-  )
-  .replace(
-    /\s+/g,
-    ' '
-  )
-  .trim();
+  return String(v || '')
+    .replace(/\s+/g, ' ')
+    .trim();
 
 }
 
 
 /* =====================================================
-   ENGLISH REGION
+   REGION FORMATTING
    ===================================================== */
 
-function regionEnglish(
-  row
-) {
+function regionEnglish(row) {
 
   const raw =
-    clean(
-      row['Region']
-    );
+    clean(row['Region']);
 
+  if (!raw) return '';
 
-  if (!raw) {
-    return '';
-  }
-
-
-  if (
-    /region$/i.test(raw)
-  ) {
-
+  if (/region$/i.test(raw)) {
     return raw;
-
   }
 
-
-  return raw +
-    ' Region';
+  return raw + ' Region';
 
 }
 
 
-/* =====================================================
-   HINDI REGION
-   ===================================================== */
-
-function regionHindi(
-  row
-) {
+function regionHindi(row) {
 
   const raw =
-    clean(
-      row['आंचल']
-    );
+    clean(row['आंचल']);
 
+  if (!raw) return '';
 
-  if (!raw) {
-    return '';
-  }
-
-
-  if (
-    /संभाग$/.test(raw)
-  ) {
-
+  if (/संभाग$/.test(raw)) {
     return raw;
-
   }
 
-
-  return raw +
-    ' संभाग';
+  return raw + ' संभाग';
 
 }
 
 
 /* =====================================================
    DETAILS LINE
-
-   EXACTLY ONE DETAILS LINE PER FACE
+   IMPORTANT:
+   COMMA SEPARATOR USED EVERYWHERE
    ===================================================== */
 
-function combined(
-  row,
-  hindi
-) {
+function combined(row, hindi) {
 
-  const a =
-    hindi
+  const a = hindi
 
-      ? [
-          row['पदनाम'],
-          row['विद्यालय'],
-          regionHindi(row)
-        ]
+    ? [
+        row['पदनाम'],
+        row['विद्यालय'],
+        regionHindi(row)
+      ]
 
-      : [
-          row['Designation'],
-          row['School'],
-          regionEnglish(row)
-        ];
+    : [
+        row['Designation'],
+        row['School'],
+        regionEnglish(row)
+      ];
 
 
   return a
     .map(clean)
     .filter(Boolean)
-    .join(' | ');
+    .join(', ');
 
 }
 
 
 /* =====================================================
-   GET RECORD
+   RECORD
    ===================================================== */
 
-function getRecord(
-  index
-) {
+function getRecord(index) {
 
   return rows[
     Number(index)
@@ -1100,20 +846,15 @@ function getRecord(
 
 
 /* =====================================================
-   SHOW SELECTED PARTICIPANT
+   LIVE PREVIEW
    ===================================================== */
 
-function show(
-  index
-) {
+function show(index) {
 
   const r =
     getRecord(index);
 
-
-  if (!r) {
-    return;
-  }
+  if (!r) return;
 
 
   $('en').textContent =
@@ -1166,20 +907,17 @@ function fitPreviewText() {
     18
   );
 
-
   fitOne(
     $('endes'),
     18,
     9
   );
 
-
   fitOne(
     $('hi'),
     48,
     20
   );
-
 
   fitOne(
     $('hides'),
@@ -1199,10 +937,8 @@ function fitOne(
   el.style.fontSize =
     maxPx + 'px';
 
-
   let n =
     maxPx;
-
 
   const maxWidth =
     el.parentElement.clientWidth -
@@ -1216,7 +952,6 @@ function fitOne(
 
     n -= 1;
 
-
     el.style.fontSize =
       n + 'px';
 
@@ -1226,53 +961,23 @@ function fitOne(
 
 
 /* =====================================================
-   ESCAPE HTML
+   HTML ESCAPE
    ===================================================== */
 
-function escapeHtml(
-  s
-) {
+function escapeHtml(s) {
 
-  return String(
-    s || ''
-  )
-
-  .replace(
-    /&/g,
-    '&amp;'
-  )
-
-  .replace(
-    /</g,
-    '&lt;'
-  )
-
-  .replace(
-    />/g,
-    '&gt;'
-  )
-
-  .replace(
-    /"/g,
-    '&quot;'
-  )
-
-  .replace(
-    /'/g,
-    '&#39;'
-  );
+  return String(s || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 
 }
 
 
 /* =====================================================
    PHYSICAL FONT FITTING
-
-   Base sizes:
-   English name = 90 pt
-   English details = 26 pt
-   Hindi name = 94 pt
-   Hindi details = 28 pt
    ===================================================== */
 
 function physicalFontSize(
@@ -1285,43 +990,31 @@ function physicalFontSize(
 ) {
 
   const probe =
-    document.createElement(
-      'span'
-    );
-
+    document.createElement('span');
 
   probe.textContent =
     text;
 
-
   probe.style.position =
     'fixed';
-
 
   probe.style.left =
     '-10000px';
 
-
   probe.style.top =
     '0';
-
 
   probe.style.whiteSpace =
     'nowrap';
 
-
   probe.style.fontFamily =
     family;
-
 
   probe.style.fontWeight =
     weight;
 
-
   probe.style.fontSize =
-    basePt +
-    'pt';
-
+    basePt + 'pt';
 
   document.body.appendChild(
     probe
@@ -1339,16 +1032,13 @@ function physicalFontSize(
 
     pt -= 1;
 
-
     probe.style.fontSize =
-      pt +
-      'pt';
+      pt + 'pt';
 
   }
 
 
   probe.remove();
-
 
   return pt;
 
@@ -1356,7 +1046,7 @@ function physicalFontSize(
 
 
 /* =====================================================
-   CREATE PHYSICAL STAND
+   NAME STAND HTML
    ===================================================== */
 
 function makeStandHtml(
@@ -1367,31 +1057,23 @@ function makeStandHtml(
   const is10 =
     standWidth === 10;
 
-
   const widthMm =
     is10
       ? 254
       : 203.2;
 
-
   const heightMm =
     101.6;
 
-
   const contentWidthMm =
-    widthMm -
-    12;
-
+    widthMm - 12;
 
   const approxPx =
     contentWidthMm *
     3.779527559;
 
 
-  /* -----------------------------------------------
-     ENGLISH NAME
-     REQUESTED BASE SIZE = 90 PT
-     ----------------------------------------------- */
+  /* English name — 90 pt */
 
   const enNameSize =
     physicalFontSize(
@@ -1406,17 +1088,11 @@ function makeStandHtml(
     );
 
 
-  /* -----------------------------------------------
-     ENGLISH DETAILS
-     REQUESTED BASE SIZE = 26 PT
-     ----------------------------------------------- */
+  /* English details — 26 pt */
 
   const enDetailSize =
     physicalFontSize(
-      combined(
-        row,
-        false
-      ),
+      combined(row, false),
       26,
       13,
       'Arial, sans-serif',
@@ -1425,10 +1101,7 @@ function makeStandHtml(
     );
 
 
-  /* -----------------------------------------------
-     HINDI NAME
-     REQUESTED BASE SIZE = 94 PT
-     ----------------------------------------------- */
+  /* Hindi name — 94 pt */
 
   const hiNameSize =
     physicalFontSize(
@@ -1443,17 +1116,11 @@ function makeStandHtml(
     );
 
 
-  /* -----------------------------------------------
-     HINDI DETAILS
-     REQUESTED BASE SIZE = 28 PT
-     ----------------------------------------------- */
+  /* Hindi details — 28 pt */
 
   const hiDetailSize =
     physicalFontSize(
-      combined(
-        row,
-        true
-      ),
+      combined(row, true),
       28,
       14,
       'Aparajita, "Noto Sans Devanagari", serif',
@@ -1465,27 +1132,21 @@ function makeStandHtml(
   return (
 
     '<div class="stand" ' +
-    'style="width:' +
-    widthMm +
-    'mm;height:' +
-    heightMm +
-    'mm;">' +
-
-
-      /* -------------------------------------------
-         UPPER ENGLISH FACE
-         ROTATED 180 DEGREES
-         ------------------------------------------- */
+      'style="width:' +
+      widthMm +
+      'mm;height:' +
+      heightMm +
+      'mm;">' +
 
       '<div class="face english" ' +
-      'style="height:50%;">' +
+        'style="height:50%;">' +
 
         '<div class="text-block">' +
 
           '<div class="name" ' +
-          'style="font-size:' +
-          enNameSize +
-          'pt;font-family:Arial Black,Arial,sans-serif;font-weight:900;">' +
+            'style="font-size:' +
+            enNameSize +
+            'pt;font-family:Arial Black,Arial,sans-serif;font-weight:900;">' +
 
             escapeHtml(
               clean(
@@ -1495,17 +1156,13 @@ function makeStandHtml(
 
           '</div>' +
 
-
           '<div class="details" ' +
-          'style="font-size:' +
-          enDetailSize +
-          'pt;font-family:Arial,Arial,sans-serif;font-weight:700;">' +
+            'style="font-size:' +
+            enDetailSize +
+            'pt;font-family:Arial,Arial,sans-serif;font-weight:700;">' +
 
             escapeHtml(
-              combined(
-                row,
-                false
-              )
+              combined(row, false)
             ) +
 
           '</div>' +
@@ -1515,20 +1172,15 @@ function makeStandHtml(
       '</div>' +
 
 
-      /* -------------------------------------------
-         LOWER HINDI FACE
-         UPRIGHT
-         ------------------------------------------- */
-
       '<div class="face hindi" ' +
-      'style="height:50%;">' +
+        'style="height:50%;">' +
 
         '<div class="text-block">' +
 
           '<div class="name" ' +
-          'style="font-size:' +
-          hiNameSize +
-          'pt;font-family:Aparajita,&quot;Noto Sans Devanagari&quot;,serif;font-weight:700;">' +
+            'style="font-size:' +
+            hiNameSize +
+            'pt;font-family:Aparajita,&quot;Noto Sans Devanagari&quot;,serif;font-weight:700;">' +
 
             escapeHtml(
               clean(
@@ -1538,17 +1190,13 @@ function makeStandHtml(
 
           '</div>' +
 
-
           '<div class="details" ' +
-          'style="font-size:' +
-          hiDetailSize +
-          'pt;font-family:Aparajita,&quot;Noto Sans Devanagari&quot;,serif;font-weight:700;">' +
+            'style="font-size:' +
+            hiDetailSize +
+            'pt;font-family:Aparajita,&quot;Noto Sans Devanagari&quot;,serif;font-weight:700;">' +
 
             escapeHtml(
-              combined(
-                row,
-                true
-              )
+              combined(row, true)
             ) +
 
           '</div>' +
@@ -1556,7 +1204,6 @@ function makeStandHtml(
         '</div>' +
 
       '</div>' +
-
 
     '</div>'
 
@@ -1566,17 +1213,7 @@ function makeStandHtml(
 
 
 /* =====================================================
-   PRINT NAMEPLATES
-
-   10×2:
-   254 mm × 50.8 mm finished stand
-   254 mm × 101.6 mm flat
-
-   8×2:
-   203.2 mm × 50.8 mm finished stand
-   203.2 mm × 101.6 mm flat
-
-   TWO STANDS PER A4 PAGE
+   PRINT / SAVE AS PDF
    ===================================================== */
 
 function printNameplates(
@@ -1584,53 +1221,44 @@ function printNameplates(
   standWidth
 ) {
 
-  if (!records.length) {
-    return;
-  }
+  if (!records.length) return;
 
 
   const is10 =
     standWidth === 10;
-
 
   const pageOrientation =
     is10
       ? 'landscape'
       : 'portrait';
 
-
   const pageW =
     is10
       ? 297
       : 210;
-
 
   const pageH =
     is10
       ? 210
       : 297;
 
-
   const standW =
     is10
       ? 254
       : 203.2;
 
-
   const standH =
     101.6;
 
-
   const side =
-    (pageW - standW) /
-    2;
+    (pageW - standW) / 2;
 
 
   /*
-   * 10×2 GEOMETRY IS UNCHANGED.
+   * 10×2 geometry remains unchanged.
    *
-   * 8×2 gets the existing 0.5 mm
-   * print-safe tolerance.
+   * 8×2 retains the 0.5 mm safety allowance
+   * to prevent an intermediate blank page.
    */
 
   const vertical =
@@ -1648,12 +1276,12 @@ function printNameplates(
         ) / 2;
 
 
-  /* -----------------------------------------------
-     EXACTLY TWO RECORDS PER PAGE
-     ----------------------------------------------- */
-
   const pages = [];
 
+
+  /*
+   * Exactly TWO participants per page.
+   */
 
   for (
     let i = 0;
@@ -1672,62 +1300,51 @@ function printNameplates(
 
 
   const pageHtml =
-    pages
-      .map(
-        function(group) {
+    pages.map(
+      group => {
 
-          const stands =
-            group
-              .map(
-                function(r) {
-
-                  return makeStandHtml(
-                    r,
-                    standWidth
-                  );
-
-                }
-              )
-              .join('');
+        const stands =
+          group
+            .map(
+              r =>
+                makeStandHtml(
+                  r,
+                  standWidth
+                )
+            )
+            .join('');
 
 
-          const pageHeight =
-            is10
-              ? pageH
-              : (
-                  pageH -
-                  0.5
-                );
+        const pageHeight =
+          is10
+            ? pageH
+            : pageH - 0.5;
 
 
-          return (
+        return (
 
-            '<section class="print-page" ' +
+          '<section ' +
+          'class="print-page" ' +
 
-            'style="width:' +
-            pageW +
-            'mm;height:' +
-            pageHeight +
-            'mm;padding:' +
-            vertical +
-            'mm ' +
-            side +
-            'mm;">' +
+          'style="width:' +
+          pageW +
+          'mm;height:' +
+          pageHeight +
+          'mm;padding:' +
+          vertical +
+          'mm ' +
+          side +
+          'mm;">' +
 
-            stands +
+          stands +
 
-            '</section>'
+          '</section>'
 
-          );
+        );
 
-        }
-      )
-      .join('');
+      }
+    ).join('');
 
-
-  /* -----------------------------------------------
-     OPEN BROWSER PRINT WINDOW
-     ----------------------------------------------- */
 
   const printWindow =
     window.open(
@@ -1741,7 +1358,7 @@ function printNameplates(
 
     alert(
       'The print window was blocked. ' +
-      'Please allow pop-ups for this GitHub Pages site and try again.'
+      'Please allow pop-ups for this Web App and try again.'
     );
 
     return;
@@ -1765,150 +1382,150 @@ function printNameplates(
   );
 
 
-  doc.write(
-    '<style>'
-  );
+  doc.write('<style>');
 
 
   doc.write(
     '@page{' +
-    'size:A4 ' +
-    pageOrientation +
-    ';' +
-    'margin:0' +
+      'size:A4 ' +
+      pageOrientation +
+      ';' +
+      'margin:0' +
     '}'
   );
 
 
   doc.write(
     'html,body{' +
-    'margin:0;' +
-    'padding:0;' +
-    'background:#fff' +
+      'margin:0;' +
+      'padding:0;' +
+      'background:#fff' +
     '}'
   );
 
 
   doc.write(
     'body{' +
-    'font-family:Arial,sans-serif' +
+      'font-family:Arial,sans-serif' +
     '}'
   );
 
 
   doc.write(
     '.print-page{' +
-    'box-sizing:border-box;' +
-    'display:flex;' +
-    'flex-direction:column;' +
-    'justify-content:flex-start;' +
-    'align-items:center;' +
-    'gap:0;' +
-    'break-after:page;' +
-    'page-break-after:always;' +
-    'overflow:hidden' +
+      'box-sizing:border-box;' +
+      'display:flex;' +
+      'flex-direction:column;' +
+      'justify-content:flex-start;' +
+      'align-items:center;' +
+      'gap:0;' +
+      'break-after:page;' +
+      'page-break-after:always;' +
+      'overflow:hidden' +
     '}'
   );
 
 
   doc.write(
     '.print-page:last-child{' +
-    'break-after:auto;' +
-    'page-break-after:auto' +
+      'break-after:auto;' +
+      'page-break-after:auto' +
     '}'
   );
 
 
   doc.write(
     '.stand{' +
-    'box-sizing:border-box;' +
-    'position:relative;' +
-    'display:flex;' +
-    'flex-direction:column;' +
-    'flex:none;' +
-    'background:#fff;' +
-    'overflow:hidden' +
+      'box-sizing:border-box;' +
+      'position:relative;' +
+      'display:flex;' +
+      'flex-direction:column;' +
+      'flex:none;' +
+      'background:#fff;' +
+      'overflow:hidden' +
     '}'
   );
 
 
   doc.write(
     '.stand:after{' +
-    'content:"";' +
-    'position:absolute;' +
-    'left:0;' +
-    'right:0;' +
-    'top:50%;' +
-    'border-top:0.25mm dashed #aeb8c2;' +
-    'pointer-events:none' +
+      'content:"";' +
+      'position:absolute;' +
+      'left:0;' +
+      'right:0;' +
+      'top:50%;' +
+      'border-top:0.25mm dashed #aeb8c2;' +
+      'pointer-events:none' +
     '}'
   );
 
 
   doc.write(
     '.face{' +
-    'box-sizing:border-box;' +
-    'width:100%;' +
-    'display:flex;' +
-    'align-items:center;' +
-    'justify-content:center;' +
-    'text-align:center;' +
-    'overflow:hidden;' +
-    'padding:2mm 6mm' +
+      'box-sizing:border-box;' +
+      'width:100%;' +
+      'display:flex;' +
+      'align-items:center;' +
+      'justify-content:center;' +
+      'text-align:center;' +
+      'overflow:hidden;' +
+      'padding:2mm 6mm' +
     '}'
   );
 
 
   doc.write(
     '.text-block{' +
-    'width:100%;' +
-    'display:flex;' +
-    'flex-direction:column;' +
-    'align-items:center;' +
-    'justify-content:center;' +
-    'text-align:center;' +
-    'margin:0 auto;' +
-    'overflow:hidden' +
+      'width:100%;' +
+      'display:flex;' +
+      'flex-direction:column;' +
+      'align-items:center;' +
+      'justify-content:center;' +
+      'text-align:center;' +
+      'margin:0 auto;' +
+      'overflow:hidden' +
     '}'
   );
 
 
   doc.write(
     '.name,.details{' +
-    'width:100%;' +
-    'text-align:center;' +
-    'white-space:nowrap;' +
-    'overflow:hidden;' +
-    'text-overflow:clip;' +
-    'line-height:1' +
+      'width:100%;' +
+      'text-align:center;' +
+      'white-space:nowrap;' +
+      'overflow:hidden;' +
+      'text-overflow:clip;' +
+      'line-height:1' +
     '}'
   );
 
 
   doc.write(
     '.details{' +
-    'margin-top:2.5mm;' +
-    'line-height:1.05' +
+      'margin-top:2.5mm;' +
+      'line-height:1.05' +
     '}'
   );
 
 
   doc.write(
     '.english{' +
-    'transform:rotate(180deg)' +
+      'transform:rotate(180deg)' +
     '}'
   );
 
 
   doc.write(
     '.hindi{' +
-    'transform:none' +
+      'transform:none' +
     '}'
   );
 
 
+  doc.write('</style>');
+
+
   doc.write(
-    '</style>' +
     '</head>' +
     '<body>' +
     pageHtml +
@@ -1920,34 +1537,33 @@ function printNameplates(
   doc.close();
 
 
-  function doPrint() {
+  const doPrint =
+    () => {
 
-    if (
-      doc.fonts &&
-      doc.fonts.ready
-    ) {
+      if (
+        doc.fonts &&
+        doc.fonts.ready
+      ) {
 
-      doc.fonts.ready.then(
-        function() {
+        doc.fonts.ready.then(
+          () => {
 
-          printWindow.focus();
+            printWindow.focus();
 
-          printWindow.print();
+            printWindow.print();
 
-        }
-      );
+          }
+        );
 
-    }
+      } else {
 
-    else {
+        printWindow.focus();
 
-      printWindow.focus();
+        printWindow.print();
 
-      printWindow.print();
+      }
 
-    }
-
-  }
+    };
 
 
   setTimeout(
@@ -1959,7 +1575,7 @@ function printNameplates(
 
 
 /* =====================================================
-   GENERATE SELECTED
+   SELECTED
    ===================================================== */
 
 function downloadSelected(
@@ -1985,9 +1601,7 @@ function downloadSelected(
     getRecord(index);
 
 
-  if (!row) {
-    return;
-  }
+  if (!row) return;
 
 
   const label =
@@ -2019,16 +1633,14 @@ function downloadSelected(
 
 
 /* =====================================================
-   GENERATE ALL
+   ALL
    ===================================================== */
 
 function downloadAll(
   standWidth
 ) {
 
-  if (!rows.length) {
-    return;
-  }
+  if (!rows.length) return;
 
 
   const label =
@@ -2064,7 +1676,7 @@ function downloadAll(
 
 
 /* =====================================================
-   ENABLE / DISABLE PRINT BUTTONS
+   BUTTON STATE
    ===================================================== */
 
 function setPdfButtons(
@@ -2079,14 +1691,11 @@ function setPdfButtons(
   $('pdf10').disabled =
     state;
 
-
   $('pdf8').disabled =
     state;
 
-
   $('all10').disabled =
     state;
-
 
   $('all8').disabled =
     state;
@@ -2095,55 +1704,42 @@ function setPdfButtons(
 
 
 /* =====================================================
-   BUTTON EVENTS
+   EVENTS
    ===================================================== */
 
 $('connect').onclick =
-  function() {
-
+  () =>
     loadTabs(
       currentSheet
     );
 
-  };
-
 
 $('refresh').onclick =
-  function() {
-
+  () =>
     loadTabs(
       currentSheet || ''
     );
 
-  };
-
 
 $('tabs').onchange =
-  function(e) {
-
+  e =>
     loadParticipants(
       e.target.value
     );
 
-  };
-
 
 $('people').onchange =
-  function(e) {
-
+  e =>
     show(
       e.target.value
     );
 
-  };
-
 
 $('clear').onclick =
-  function() {
+  () => {
 
     $('people').value =
       '';
-
 
     $('selectedNo').textContent =
       'No participant selected';
@@ -2154,7 +1750,7 @@ $('clear').onclick =
 
 
     $('endes').textContent =
-      'Designation | School | Jaipur Region';
+      'Designation, School, Jaipur Region';
 
 
     $('hi').textContent =
@@ -2162,7 +1758,7 @@ $('clear').onclick =
 
 
     $('hides').textContent =
-      'पदनाम | विद्यालय | जयपुर संभाग';
+      'पदनाम, विद्यालय, जयपुर संभाग';
 
 
     fitPreviewText();
@@ -2171,59 +1767,42 @@ $('clear').onclick =
 
 
 $('pdf10').onclick =
-  function() {
-
-    downloadSelected(
-      10
-    );
-
-  };
+  () =>
+    downloadSelected(10);
 
 
 $('pdf8').onclick =
-  function() {
-
-    downloadSelected(
-      8
-    );
-
-  };
+  () =>
+    downloadSelected(8);
 
 
 $('all10').onclick =
-  function() {
-
-    downloadAll(
-      10
-    );
-
-  };
+  () =>
+    downloadAll(10);
 
 
 $('all8').onclick =
-  function() {
-
-    downloadAll(
-      8
-    );
-
-  };
+  () =>
+    downloadAll(8);
 
 
 /* =====================================================
    INITIAL STATE
-
-   IMPORTANT:
-   NO API CALL HERE.
-
-   The page will remain quiet when opened.
-   The user must click Connect.
    ===================================================== */
 
-setPdfButtons(
-  false
-);
+/*
+   No API call on page load.
 
+   Click "Connect & Discover All Tabs"
+   to read the live Google Sheet.
+
+   This prevents repeated network permission
+   prompts on GitHub Pages.
+*/
+
+setPdfButtons(false);
+
+fitPreviewText();
 
 window.addEventListener(
   'resize',
