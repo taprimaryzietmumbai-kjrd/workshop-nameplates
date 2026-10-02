@@ -241,7 +241,7 @@ function combined(row, hindi) {
   return a.map(clean).filter(Boolean).join(', ');
 }
 function combinedForPrint(row, hindi) {
-  if (currentSheet === 'AGSH SEPT') {
+  if (document.getElementById('tabs').value === 'AGSH SEPT') {
     const a = hindi
       ? [row['पदनाम'], row['विद्यालय']]
       : [row['Designation'], row['School']];
@@ -249,6 +249,7 @@ function combinedForPrint(row, hindi) {
   }
 
   return combined(row, hindi);
+}
 }
 function getRecord(index) {
   return rows[Number(index)] || null;
