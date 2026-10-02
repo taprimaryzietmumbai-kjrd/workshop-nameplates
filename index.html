@@ -240,7 +240,16 @@ function combined(row, hindi) {
     : [row['Designation'], row['School'], regionEnglish(row)];
   return a.map(clean).filter(Boolean).join(', ');
 }
+function combinedForPrint(row, hindi) {
+  if (currentSheet === 'AGSH SEPT') {
+    const a = hindi
+      ? [row['पदनाम'], row['विद्यालय']]
+      : [row['Designation'], row['School']];
+    return a.map(clean).filter(Boolean).join(' | ');
+  }
 
+  return combined(row, hindi);
+}
 function getRecord(index) {
   return rows[Number(index)] || null;
 }
@@ -309,21 +318,21 @@ function makeStandHtml(row, standWidth) {
   const contentWidthMm = widthMm - 12;
   const approxPx = contentWidthMm * 3.779527559;
   const enNameSize = physicalFontSize(clean(row['Name of the Participant']), 90, 42, 'Arial Black, Arial, sans-serif', '900', approxPx);
-  const enDetailSize = physicalFontSize(combined(row,false), 26, 13, 'Arial, sans-serif', '700', approxPx);
+  const enDetailSize = physicalFontSize(combinedForPrint(row,false), 26, 13, 'Arial, sans-serif', '700', approxPx);
   const hiNameSize = physicalFontSize(clean(row['प्रतिभागी का नाम']), 94, 46, 'Aparajita, "Noto Sans Devanagari", serif', '700', approxPx);
-  const hiDetailSize = physicalFontSize(combined(row,true), 28, 14, 'Aparajita, "Noto Sans Devanagari", serif', '700', approxPx);
+  const hiDetailSize = physicalFontSize(combinedForPrint(row,true), 28, 14, 'Aparajita, "Noto Sans Devanagari", serif', '700', approxPx);
 
   return '<div class="stand" style="width:' + widthMm + 'mm;height:' + heightMm + 'mm;">' +
     '<div class="face english" style="height:50%;">' +
       '<div class="text-block">' +
         '<div class="name" style="font-size:' + enNameSize + 'pt;font-family:Arial Black,Arial,sans-serif;font-weight:900;">' + escapeHtml(clean(row['Name of the Participant'])) + '</div>' +
-        '<div class="details" style="font-size:' + enDetailSize + 'pt;font-family:Arial,Arial,sans-serif;font-weight:700;">' + escapeHtml(combined(row,false)) + '</div>' +
+        '<div class="details" style="font-size:' + enDetailSize + 'pt;font-family:Arial,Arial,sans-serif;font-weight:700;">' + escapeHtml(combinedForPrint(row,false)) + '</div>' +
       '</div>' +
     '</div>' +
     '<div class="face hindi" style="height:50%;">' +
       '<div class="text-block">' +
         '<div class="name" style="font-size:' + hiNameSize + 'pt;font-family:Aparajita,&quot;Noto Sans Devanagari&quot;,serif;font-weight:700;">' + escapeHtml(clean(row['प्रतिभागी का नाम'])) + '</div>' +
-        '<div class="details" style="font-size:' + hiDetailSize + 'pt;font-family:Aparajita,&quot;Noto Sans Devanagari&quot;,serif;font-weight:700;">' + escapeHtml(combined(row,true)) + '</div>' +
+        '<div class="details" style="font-size:' + hiDetailSize + 'pt;font-family:Aparajita,&quot;Noto Sans Devanagari&quot;,serif;font-weight:700;">' + escapeHtml(combinedForPrint(row,true)) + '</div>' +
       '</div>' +
     '</div>' +
   '</div>';
