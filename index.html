@@ -107,7 +107,7 @@ let currentSheet = '';
 let busy = false;
 
 const API_URL =
-https://script.google.com/macros/s/AKfycbx10N43CfsIj7moF3DJlG9B_5jC57OZajMUWLGJdHHvewUfRBxO8FSzeiiyG5TK3Mmocw/exec;
+  'https://script.google.com/macros/s/AKfycbx10N43CfsIj7moF3DJlG9B_5jC57OZajMUWLGJdHHvewUfRBxO8FSzeiiyG5TK3Mmocw/exec';
 let jsonpCounter = 0;
 
 function apiCall(action, params = {}) {
@@ -240,15 +240,8 @@ function combined(row, hindi) {
   return a.map(clean).filter(Boolean).join(', ');
 }
 function combinedForPrint(row, hindi) {
-  if (document.getElementById('tabs').value === 'AGSH SEPT') {
-    const a = hindi
-      ? [row['पदनाम'], row['विद्यालय']]
-      : [row['Designation'], row['School']];
-    return a.map(clean).filter(Boolean).join(' | ');
-  }
-
+  // Use commas consistently in all printed nameplates.
   return combined(row, hindi);
-}
 }
 function getRecord(index) {
   return rows[Number(index)] || null;
