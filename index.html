@@ -296,7 +296,10 @@ function physicalFontSize(text, basePt, minPt, family, weight, maxWidthPx) {
   probe.style.fontSize = basePt + 'pt';
   document.body.appendChild(probe);
   let pt = basePt;
-  while (pt > minPt && probe.scrollWidth > maxWidthPx) {
+  // Keep reducing the font until the complete name/details fit the printable width.
+  // The supplied minPt is a preferred floor; very long names may go smaller rather than clip.
+  const absoluteMinPt = 10;
+  while (pt > absoluteMinPt && probe.scrollWidth > maxWidthPx) {
     pt -= 1;
     probe.style.fontSize = pt + 'pt';
   }
