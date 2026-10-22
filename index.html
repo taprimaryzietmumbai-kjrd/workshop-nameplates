@@ -284,24 +284,30 @@ function escapeHtml(s) {
     .replace(/'/g,'&#39;');
 }
 
-function physicalFontSize(text, basePt, minPt, family, weight, maxWidthPx) {
+function physicalFontSize(text, basePt, minPt, family, weight, maxWidthPx, maxHeightPx = 42) {
   const probe = document.createElement('span');
   probe.textContent = text;
   probe.style.position = 'fixed';
   probe.style.left = '-10000px';
   probe.style.top = '0';
-  probe.style.whiteSpace = 'nowrap';
+  probe.style.display = 'inline-block';
+  probe.style.boxSizing = 'border-box';
+  probe.style.width = maxWidthPx + 'px';
+  probe.style.maxWidth = maxWidthPx + 'px';
+  probe.style.whiteSpace = 'normal';
+  probe.style.overflowWrap = 'anywhere';
+  probe.style.wordBreak = 'normal';
+  probe.style.lineHeight = '1.05';
   probe.style.fontFamily = family;
   probe.style.fontWeight = weight;
-  probe.style.fontSize = basePt + 'pt';
   document.body.appendChild(probe);
   let pt = basePt;
-  // Keep reducing the font until the complete name/details fit the printable width.
-  // The supplied minPt is a preferred floor; very long names may go smaller rather than clip.
-  const absoluteMinPt = 10;
-  while (pt > absoluteMinPt && probe.scrollWidth > maxWidthPx) {
-    pt -= 1;
+  // Fit both width and height. Very long text can wrap, and the font keeps shrinking if needed.
+  const absoluteMinPt = 7;
+  while (pt > absoluteMinPt) {
     probe.style.fontSize = pt + 'pt';
+    if (probe.scrollWidth <= maxWidthPx + 1 && probe.scrollHeight <= maxHeightPx) break;
+    pt -= 1;
   }
   probe.remove();
   return pt;
@@ -313,10 +319,11 @@ function makeStandHtml(row, standWidth) {
   const heightMm = 101.6;
   const contentWidthMm = widthMm - 12;
   const approxPx = contentWidthMm * 3.779527559;
-  const enNameSize = physicalFontSize(clean(row['Name of the Participant']), 90, 42, 'Arial Black, Arial, sans-serif', '900', approxPx);
-  const enDetailSize = physicalFontSize(combinedForPrint(row,false), 26, 13, 'Arial, sans-serif', '700', approxPx);
-  const hiNameSize = physicalFontSize(clean(row['प्रतिभागी का नाम']), 94, 46, 'Aparajita, "Noto Sans Devanagari", serif', '700', approxPx);
-  const hiDetailSize = physicalFontSize(combinedForPrint(row,true), 28, 14, 'Aparajita, "Noto Sans Devanagari", serif', '700', approxPx);
+  const faceHeightPx = (heightMm / 2 - 3) * 3.779527559;
+  const enNameSize = physicalFontSize(clean(row['Name of the Participant']), 90, 42, 'Arial Black, Arial, sans-serif', '900', approxPx, faceHeightPx * 0.62);
+  const enDetailSize = physicalFontSize(combinedForPrint(row,false), 26, 13, 'Arial, sans-serif', '700', approxPx, faceHeightPx * 0.32);
+  const hiNameSize = physicalFontSize(clean(row['प्रतिभागी का नाम']), 94, 46, 'Aparajita, "Noto Sans Devanagari", serif', '700', approxPx, faceHeightPx * 0.62);
+  const hiDetailSize = physicalFontSize(combinedForPrint(row,true), 28, 14, 'Aparajita, "Noto Sans Devanagari", serif', '700', approxPx, faceHeightPx * 0.32);
 
   return '<div class="stand" style="width:' + widthMm + 'mm;height:' + heightMm + 'mm;">' +
     '<div class="face english" style="height:50%;">' +
@@ -377,10 +384,10 @@ function printNameplates(records, standWidth) {
   doc.write('.print-page:last-child{break-after:auto;page-break-after:auto}');
   doc.write('.stand{box-sizing:border-box;position:relative;display:flex;flex-direction:column;flex:none;background:#fff;overflow:hidden}');
   doc.write('.stand:after{content:"";position:absolute;left:0;right:0;top:50%;border-top:0.25mm dashed #aeb8c2;pointer-events:none}');
-  doc.write('.face{box-sizing:border-box;width:100%;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;padding:2mm 6mm}');
-  doc.write('.text-block{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;margin:0 auto;overflow:hidden}');
-  doc.write('.name,.details{width:100%;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:clip;line-height:1}');
-  doc.write('.details{margin-top:2.5mm;line-height:1.05}');
+  doc.write('.face{box-sizing:border-box;width:100%;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;padding:1.5mm 6mm}');
+  doc.write('.text-block{width:100%;height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;margin:0 auto;overflow:hidden}');
+  doc.write('.name,.details{box-sizing:border-box;width:100%;max-width:100%;text-align:center;white-space:normal;overflow-wrap:anywhere;word-break:normal;line-height:1.05;flex:0 1 auto;min-height:0}');
+  doc.write('.details{margin-top:1.5mm;line-height:1.05}');
   doc.write('.english{transform:rotate(180deg)}');
   doc.write('.hindi{transform:none}');
   doc.write('</style></head><body>' + pageHtml + '</body></html>');
