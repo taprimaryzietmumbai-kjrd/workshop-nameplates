@@ -33,8 +33,8 @@ button:disabled,select:disabled{opacity:.55;cursor:not-allowed}
 .eng{transform:rotate(180deg)}
 .name{font-family:"Arial Black",Arial,sans-serif;font-weight:900;line-height:.95;white-space:nowrap;max-width:100%;overflow:hidden}
 .details{font-family:Arial,sans-serif;font-weight:700;line-height:1.05;white-space:nowrap;max-width:100%;overflow:hidden;margin-top:8px}
-.hiname{font-family:Aparajita,"Noto Sans Devanagari",serif;font-weight:700;line-height:.95;white-space:nowrap;max-width:100%;overflow:hidden}
-.hdetails{font-family:Aparajita,"Noto Sans Devanagari",serif;font-weight:700;line-height:1.05;white-space:nowrap;max-width:100%;overflow:hidden;margin-top:8px}
+.hiname{font-family:Aparajita,"Noto Sans Devanagari",serif;font-weight:700;line-height:1.16;white-space:nowrap;max-width:100%;overflow:visible}
+.hdetails{font-family:Aparajita,"Noto Sans Devanagari",serif;font-weight:700;line-height:1.16;white-space:nowrap;max-width:100%;overflow:visible;margin-top:8px}
 .fold{border-top:1px dashed #a9b4bf;position:absolute;width:100%;left:0;top:50%}
 .platewrap{position:relative;width:95%;max-width:900px}
 .note{background:#fff8df;border:1px solid #ead28a;border-radius:10px;padding:10px;margin-top:12px;font-size:13px}
@@ -297,7 +297,7 @@ function physicalFontSize(text, basePt, minPt, family, weight, maxWidthPx, maxHe
   probe.style.whiteSpace = 'normal';
   probe.style.overflowWrap = 'anywhere';
   probe.style.wordBreak = 'normal';
-  probe.style.lineHeight = '1.05';
+  probe.style.lineHeight = /Aparajita|Devanagari/i.test(family) ? '1.2' : '1.05';
   probe.style.fontFamily = family;
   probe.style.fontWeight = weight;
   document.body.appendChild(probe);
@@ -322,8 +322,8 @@ function makeStandHtml(row, standWidth) {
   const faceHeightPx = (heightMm / 2 - 3) * 3.779527559;
   const enNameSize = physicalFontSize(clean(row['Name of the Participant']), 90, 42, 'Arial Black, Arial, sans-serif', '900', approxPx, faceHeightPx * 0.62);
   const enDetailSize = physicalFontSize(combinedForPrint(row,false), 26, 13, 'Arial, sans-serif', '700', approxPx, faceHeightPx * 0.32);
-  const hiNameSize = physicalFontSize(clean(row['प्रतिभागी का नाम']), 94, 46, 'Aparajita, "Noto Sans Devanagari", serif', '700', approxPx, faceHeightPx * 0.62);
-  const hiDetailSize = physicalFontSize(combinedForPrint(row,true), 28, 14, 'Aparajita, "Noto Sans Devanagari", serif', '700', approxPx, faceHeightPx * 0.32);
+  const hiNameSize = physicalFontSize(clean(row['प्रतिभागी का नाम']), 94, 46, 'Aparajita, "Noto Sans Devanagari", serif', '700', approxPx, faceHeightPx * 0.68);
+  const hiDetailSize = physicalFontSize(combinedForPrint(row,true), 28, 14, 'Aparajita, "Noto Sans Devanagari", serif', '700', approxPx, faceHeightPx * 0.36);
 
   return '<div class="stand" style="width:' + widthMm + 'mm;height:' + heightMm + 'mm;">' +
     '<div class="face english" style="height:50%;">' +
@@ -389,7 +389,9 @@ function printNameplates(records, standWidth) {
   doc.write('.name,.details{box-sizing:border-box;width:100%;max-width:100%;text-align:center;white-space:normal;overflow-wrap:anywhere;word-break:normal;line-height:1.05;flex:0 1 auto;min-height:0}');
   doc.write('.details{margin-top:1.5mm;line-height:1.05}');
   doc.write('.english{transform:rotate(180deg)}');
-  doc.write('.hindi{transform:none}');
+  doc.write('.hindi{transform:none;padding:3mm 6mm 1.5mm;overflow:visible}');
+  doc.write('.hindi .text-block{overflow:visible}');
+  doc.write('.hindi .name,.hindi .details{line-height:1.2;overflow:visible}');
   doc.write('</style></head><body>' + pageHtml + '</body></html>');
   doc.close();
 
