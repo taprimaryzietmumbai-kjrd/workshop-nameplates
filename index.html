@@ -29,10 +29,10 @@ button:disabled,select:disabled{opacity:.55;cursor:not-allowed}
 .topline{display:flex;justify-content:space-between;font-weight:700;color:#245d8f}
 .preview{background:#dfe8f1;border-radius:14px;min-height:530px;display:flex;align-items:center;justify-content:center;padding:30px}
 .plate{width:95%;max-width:900px;aspect-ratio:5/2;background:#fff;border:1px solid #b8c3ce;box-shadow:0 12px 30px #0002;display:flex;flex-direction:column;text-align:center}
-.face{height:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 18px;overflow:hidden}
+.face{height:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 18px;overflow:visible;box-sizing:border-box}
 .eng{transform:rotate(180deg)}
-.name{font-family:"Arial Black",Arial,sans-serif;font-weight:900;line-height:.95;white-space:nowrap;max-width:100%;overflow:hidden}
-.details{font-family:Arial,sans-serif;font-weight:700;line-height:1.05;white-space:nowrap;max-width:100%;overflow:hidden;margin-top:8px}
+.name{font-family:"Arial Black",Arial,sans-serif;font-weight:900;line-height:1.12;white-space:nowrap;max-width:100%;overflow:visible}
+.details{font-family:Arial,sans-serif;font-weight:700;line-height:1.12;white-space:nowrap;max-width:100%;overflow:visible;margin-top:8px}
 .hiname{font-family:Aparajita,"Noto Sans Devanagari",serif;font-weight:700;line-height:1.16;white-space:nowrap;max-width:100%;overflow:visible}
 .hdetails{font-family:Aparajita,"Noto Sans Devanagari",serif;font-weight:700;line-height:1.16;white-space:nowrap;max-width:100%;overflow:visible;margin-top:8px}
 .fold{border-top:1px dashed #a9b4bf;position:absolute;width:100%;left:0;top:50%}
@@ -320,8 +320,8 @@ function makeStandHtml(row, standWidth) {
   const contentWidthMm = widthMm - 12;
   const approxPx = contentWidthMm * 3.779527559;
   const faceHeightPx = (heightMm / 2 - 3) * 3.779527559;
-  const enNameSize = physicalFontSize(clean(row['Name of the Participant']), 90, 42, 'Arial Black, Arial, sans-serif', '900', approxPx, faceHeightPx * 0.62);
-  const enDetailSize = physicalFontSize(combinedForPrint(row,false), 26, 13, 'Arial, sans-serif', '700', approxPx, faceHeightPx * 0.32);
+  const enNameSize = physicalFontSize(clean(row['Name of the Participant']), 90, 42, 'Arial Black, Arial, sans-serif', '900', approxPx, faceHeightPx * 0.55);
+  const enDetailSize = physicalFontSize(combinedForPrint(row,false), 26, 13, 'Arial, sans-serif', '700', approxPx, faceHeightPx * 0.28);
   const hiNameSize = physicalFontSize(clean(row['प्रतिभागी का नाम']), 94, 46, 'Aparajita, "Noto Sans Devanagari", serif', '700', approxPx, faceHeightPx * 0.68);
   const hiDetailSize = physicalFontSize(combinedForPrint(row,true), 28, 14, 'Aparajita, "Noto Sans Devanagari", serif', '700', approxPx, faceHeightPx * 0.36);
 
@@ -384,13 +384,14 @@ function printNameplates(records, standWidth) {
   doc.write('.print-page:last-child{break-after:auto;page-break-after:auto}');
   doc.write('.stand{box-sizing:border-box;position:relative;display:flex;flex-direction:column;flex:none;background:#fff;overflow:hidden}');
   doc.write('.stand:after{content:"";position:absolute;left:0;right:0;top:50%;border-top:0.25mm dashed #aeb8c2;pointer-events:none}');
-  doc.write('.face{box-sizing:border-box;width:100%;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;padding:1.5mm 6mm}');
-  doc.write('.text-block{width:100%;height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;margin:0 auto;overflow:hidden}');
-  doc.write('.name,.details{box-sizing:border-box;width:100%;max-width:100%;text-align:center;white-space:normal;overflow-wrap:anywhere;word-break:normal;line-height:1.05;flex:0 1 auto;min-height:0}');
-  doc.write('.details{margin-top:1.5mm;line-height:1.05}');
+  doc.write('.face{box-sizing:border-box;width:100%;display:flex;align-items:center;justify-content:center;text-align:center;overflow:visible;padding:2mm 6mm}');
+  doc.write('.text-block{box-sizing:border-box;width:100%;height:100%;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;margin:0 auto;overflow:visible}');
+  doc.write('.name,.details{box-sizing:border-box;width:100%;max-width:100%;text-align:center;white-space:normal;overflow-wrap:anywhere;word-break:normal;line-height:1.12;overflow:visible;flex:0 1 auto;min-height:0}');
+  doc.write('.details{margin-top:1.5mm;line-height:1.12}');
   doc.write('.english{transform:rotate(180deg)}');
   doc.write('.hindi{transform:none;padding:3mm 6mm 1.5mm;overflow:visible}');
   doc.write('.hindi .text-block{overflow:visible}');
+  doc.write('.english .name,.english .details{line-height:1.12;overflow:visible}');
   doc.write('.hindi .name,.hindi .details{line-height:1.2;overflow:visible}');
   doc.write('</style></head><body>' + pageHtml + '</body></html>');
   doc.close();
